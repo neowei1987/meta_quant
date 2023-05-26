@@ -1,12 +1,3 @@
-# This is a sample Python script.
-
-# Press ⌃R to execute it or replace it with your code.
-# Press Double ⇧ to search everywhere for classes, files, tool windows, actions, and settings.
-
-
-def print_hi(name):
-    # Use a breakpoint in the code line below to debug your script.
-    print(f'Hi, {name}')  # Press ⌘F8 to toggle the breakpoint.
 
 # 技术面
 # 趋势方向如何
@@ -32,9 +23,18 @@ def print_hi(name):
 # 数据
 
 
+if __name__ == "__main__":
+    csv_dir = '/path/to/your/csv/file'  # CHANGE THIS!
+    symbol_list = ['SPY']
+    initial_capital = 100000.0
+    heartbeat = 0.0
+    start_date = datetime.datetime(2006,1,3)
 
-# Press the green button in the gutter to run the script.
-if __name__ == '__main__':
-    print_hi('PyCharm')
+    backtest = Backtest(
+        csv_dir, symbol_list, initial_capital, heartbeat,
+        start_date, HistoricCSVDataHandler, SimulatedExecutionHandler,
+        Portfolio, SPYDailyForecastStrategy
+    )
+    backtest.simulate_trading()
 
 # See PyCharm help at https://www.jetbrains.com/help/pycharm/
