@@ -19,3 +19,10 @@ stock_realtime = {
 }
 print(stock_realtime)
 
+
+#pd.set_option('expand_frame_repr', False)  # 当列太多时不换行
+
+# 神奇的链接http://hq.sinajs.cn/list=sh600000,sh600004
+
+# 本程序的作用是：从新浪网上，将所有股票最新的数据抓取下来并且保存。
+# 可以每天定期运行，然后就能得到每天的数据了。

@@ -53,6 +53,13 @@ system will be treated identically by the rest of the backtesting suite.
         raise NotImplementedError("Should implement get_latest_bar_datetime()")
 
     @abstractmethod
+    def get_latest_bar_datetime_no_symbol(self, symbol):
+        """
+        Returns a Python datetime object for the last bar.
+        """
+        raise NotImplementedError("Should implement get_latest_bar_datetime_no_symbol()")
+
+    @abstractmethod
     def get_latest_bar_value(self, symbol, val_type):
         """
         Returns one of the Open, High, Low, Close, Volume or OI

@@ -47,6 +47,7 @@ def cal_fuquan_price(input_stock_data, fuquan_type='后复权'):
     # 计算复权的开盘价、最高价、最低价
     df['开盘价_' + fuquan_type] = input_stock_data['开盘价'] / input_stock_data['收盘价'] * df['收盘价_' + fuquan_type]
     df['最高价_' + fuquan_type] = input_stock_data['最高价'] / input_stock_data['收盘价'] * df['收盘价_' + fuquan_type]
-    df['最低价_' + fuquan_type] = input_stock_data['最低价'] / input_stock_data['收盘价'] * df['收盘价_' + fuquan_type]
+    df['最低价_' + fuquan_type] = input_stock_data['最低价']\
+                               / input_stock_data['收盘价'] * df['收盘价_' + fuquan_type]
 
     return df[[i + '_' + fuquan_type for i in '开盘价', '最高价', '最低价', '收盘价']]

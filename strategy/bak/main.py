@@ -5,7 +5,7 @@ date: 2017年05月06日
 择时策略框架的主函数
 """
 import pandas as pd
-import Signals  # 同一级目录直接import
+from strategy.bak import signal_ma
 import Timing_Functions
 from program import Functions  # 或者import program.Function
 pd.set_option('expand_frame_repr', False)  # 当列太多时不换行
@@ -27,7 +27,7 @@ df[[i + '_' + fuquan_type for i in '开盘价', '最高价', '最低价', '收�
 
 # =====第二个模块：产生交易信号
 # ===根据均线策略产生交易信号
-df = Signals.signal_ma(df, ma_short=5, ma_long=50)
+df = signal_ma.signal_ma(df, ma_short=5, ma_long=50)
 
 
 # =====第三个模块：根据交易信号计算每天的仓位

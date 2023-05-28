@@ -8,7 +8,7 @@ from binance.cm_futures import CMFutures
 
 api_key = "Y2kKcBDco2qrE94Ik0zHsKtl7jQQGSF170sVRLkA5oVPf8KITmIro5hZRxeSAI8z"
 api_secret = "FF7DzkcriUpEAQyW9v5rEsLUAMdhqIjlzYCFu3ietKJfi7SyAoDtxIEdc80Os4i8"
-client=Client(api_key, api_secret)
+client = None
 
 
 def download_klines(symbol, timeframe, begin, end, limit):
@@ -26,6 +26,10 @@ def download_klines(symbol, timeframe, begin, end, limit):
 
 
 def get_historical_klines(symbol, timeframe, start, end, limit=1000):
+    global client
+
+    if client is None:
+        client = Client(api_key, api_secret)
     delta = end - start
     num_threads = (delta // (limit * 60 * 1000)) + 1
     delta_per_thread = delta // num_threads

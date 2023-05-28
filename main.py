@@ -39,7 +39,7 @@ if __name__ == "__main__":
     end_date = datetime.datetime(2023, 1, 10, 0, 0, 0)
     backtest = Backtest(
         csv_dir, symbol_list, initial_capital, heartbeat,
-        start_date, end_date, "1m", SmartDataHandler, SimulatedExecutionHandler,
+        start_date, end_date, "5m", SmartDataHandler, SimulatedExecutionHandler,
         Portfolio, MovingAverageCrossStrategy
     )
     backtest.simulate_trading()

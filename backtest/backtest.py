@@ -95,6 +95,8 @@ class Backtest(object):
                         if event.type == 'MARKET':
                             self.strategy.calculate_signals(event)
                             self.portfolio.update_timeindex(event)
+                            if self.data_handler.get_latest_bar_datetime_no_symbol() >= self.end_date:
+                                self.data_handler.continue_backtest = False
                         elif event.type == 'SIGNAL':
                             self.signals += 1
                             self.portfolio.update_signal(event)

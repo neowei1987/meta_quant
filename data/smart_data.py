@@ -87,6 +87,18 @@ class SmartDataHandler(DataHandler):
         else:
             return bars_list[-1][0]
 
+    def get_latest_bar_datetime_no_symbol(self):
+        """
+        Returns a Python datetime object for the last bar.
+        """
+        try:
+            bars_list = self.latest_symbol_data[self.symbol_list[0]]
+        except KeyError:
+            print("That symbol is not available in the historical data set.")
+            raise
+        else:
+            return bars_list[-1][0]
+
     def get_latest_bar_value(self, symbol, val_type):
         """
         Returns one of the Open, High, Low, Close, Volume or OI

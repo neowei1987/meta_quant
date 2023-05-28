@@ -43,11 +43,16 @@ class Portfolio(object):
         self.symbol_list = self.bars.symbol_list
         self.start_date = start_date
         self.initial_capital = initial_capital
+        # 每一个时间点的仓位
         self.all_positions = self.construct_all_positions()
+        # 当前仓位
         self.current_positions = dict( (k,v) for k, v in \
                                       [(s, 0) for s in self.symbol_list] )
+        # 每一个时间点的资产信息
         self.all_holdings = self.construct_all_holdings()
+        # 当前资产信息
         self.current_holdings = self.construct_current_holdings()
+
     def construct_all_positions(self):
             """
             Constructs the positions list using the start_date
@@ -56,6 +61,7 @@ class Portfolio(object):
             d = dict( (k,v) for k, v in [(s, 0) for s in self.symbol_list] )
             d['datetime'] = self.start_date
             return [d]
+
     def construct_all_holdings(self):
         """
         Constructs the holdings list using the start_date
@@ -67,16 +73,18 @@ class Portfolio(object):
         d['commission'] = 0.0
         d['total'] = self.initial_capital
         return [d]
+
     def construct_current_holdings(self):
         """
         This constructs the dictionary which will hold the instantaneous
         value of the portfolio across all symbols.
         """
         d = dict( (k,v) for k, v in [(s, 0.0) for s in self.symbol_list] )
-        d['cash'] = self.initial_capital
-        d['commission'] = 0.0
-        d['total'] = self.initial_capital
+        d['cash'] = self.initial_capital  # 现金
+        d['commission'] = 0.0  # 手续费
+        d['total'] = self.initial_capital #总资产
         return d
+
     def update_timeindex(self, event):
         """
         Adds a new record to the positions matrix for the current
@@ -84,11 +92,10 @@ class Portfolio(object):
         current market data at this stage is known (OHLCV).
         Makes use of a MarketEvent from the events queue.
         """
-        latest_datetime = self.bars.get_latest_bar_datetime(
-            self.symbol_list[0])
+        latest_datetime = self.bars.get_latest_bar_datetime_no_symbol()
         # Update positions
         # ================
-        dp = dict( (k,v) for k, v in [(s, 0) for s in self.symbol_list] )
+        dp = dict( (k,v) for k, v in [(s, 0) for s in self.symbol_list])
         dp['datetime'] = latest_datetime
         for s in self.symbol_list:
             dp[s] = self.current_positions[s]
@@ -96,19 +103,19 @@ class Portfolio(object):
         self.all_positions.append(dp)
         # Update holdings
         # ===============
-        dh = dict( (k,v) for k, v in [(s, 0) for s in self.symbol_list] )
+        dh = dict((k, v) for k, v in [(s, 0) for s in self.symbol_list])
         dh['datetime'] = latest_datetime
         dh['cash'] = self.current_holdings['cash']
         dh['commission'] = self.current_holdings['commission']
         dh['total'] = self.current_holdings['cash']
         for s in self.symbol_list:
             # Approximation to the real value
-            market_value = self.current_positions[s] * \
-            self.bars.get_latest_bar_value(s, "Close")
+            market_value = self.current_positions[s] * self.bars.get_latest_bar_value(s, "Close")
             dh[s] = market_value
             dh['total'] += market_value
         # Append the current holdings
         self.all_holdings.append(dh)
+
     def update_positions_from_fill(self, fill):
         """
         Takes a Fill object and updates the position matrix to
@@ -123,7 +130,8 @@ class Portfolio(object):
         if fill.direction == 'SELL':
             fill_dir = -1
         # Update positions list with new quantities
-        self.current_positions[fill.symbol] += fill_dir*fill.quantity
+        self.current_positions[fill.symbol] += fill_dir * fill.quantity
+
     def update_holdings_from_fill(self, fill):
         """
         Takes a Fill object and updates the holdings matrix to
@@ -138,12 +146,13 @@ class Portfolio(object):
         if fill.direction == 'SELL':
             fill_dir = -1
         # Update holdings list with new quantities
-        fill_cost = self.bars.get_latest_bar_value(fill.symbol, "adj_close")
+        fill_cost = self.bars.get_latest_bar_value(fill.symbol, "Close")
         cost = fill_dir * fill_cost * fill.quantity
         self.current_holdings[fill.symbol] += cost
         self.current_holdings['commission'] += fill.commission
         self.current_holdings['cash'] -= (cost + fill.commission)
         self.current_holdings['total'] -= (cost + fill.commission)
+
     def update_fill(self, event):
         """
         Updates the portfolio current positions and holdings
@@ -152,6 +161,16 @@ class Portfolio(object):
         if event.type == 'FILL':
             self.update_positions_from_fill(event)
             self.update_holdings_from_fill(event)
+
+    def get_quantity_to_order(self, price):
+        """
+        根据剩余可用资金，计算要下单的仓位数
+        要考虑手续费，手续费有两种：
+        1. 一种是固定的
+        2. 一种 成交额 * 手续费比率
+        """
+        return round(self.current_holdings['cash'] / price, 5)
+
     def generate_naive_order(self, signal):
         """
         Simply files an Order object as a constant quantity
@@ -164,7 +183,7 @@ class Portfolio(object):
         symbol = signal.symbol
         direction = signal.signal_type
         strength = signal.strength
-        mkt_quantity = 100
+        mkt_quantity = self.get_quantity_to_order(signal.price)
         cur_quantity = self.current_positions[symbol]
         order_type = 'MKT'
         if direction == 'LONG' and cur_quantity == 0:
@@ -176,6 +195,7 @@ class Portfolio(object):
         if direction == 'EXIT' and cur_quantity < 0:
             order = OrderEvent(symbol, order_type, abs(cur_quantity), 'BUY')
         return order
+
     def update_signal(self, event):
         """
         Acts on a SignalEvent to generate new orders
@@ -184,6 +204,7 @@ class Portfolio(object):
         if event.type == 'SIGNAL':
             order_event = self.generate_naive_order(event)
             self.events.put(order_event)
+
     def create_equity_curve_dataframe(self):
         """
         Creates a pandas DataFrame from the all_holdings
@@ -194,16 +215,18 @@ class Portfolio(object):
         curve['returns'] = curve['total'].pct_change()
         curve['equity_curve'] = (1.0+curve['returns']).cumprod()
         self.equity_curve = curve
+
     def output_summary_stats(self):
         """
         Creates a list of summary statistics for the portfolio.
         """
+
         total_return = self.equity_curve['equity_curve'][-1]
         returns = self.equity_curve['returns']
         pnl = self.equity_curve['equity_curve']
         sharpe_ratio = create_sharpe_ratio(returns, periods=252*60*6.5)
-        drawdown, max_dd, dd_duration = create_drawdowns(pnl)
-        self.equity_curve['drawdown'] = drawdown
+        draw_down, max_dd, dd_duration = create_drawdowns(pnl)
+        self.equity_curve['drawdown'] = draw_down
         stats = [("Total Return", "%0.2f%%" % \
                   ((total_return - 1.0) * 100.0)),
                  ("Sharpe Ratio", "%0.2f" % sharpe_ratio),

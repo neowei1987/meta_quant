@@ -1,7 +1,7 @@
 #!/usr/bin/python
 # -*- coding: utf-8 -*-
 
-# mac.py
+# turtle.py
 
 from __future__ import print_function
 from __future__ import absolute_import
@@ -13,12 +13,14 @@ import numpy as np
 from strategy import Strategy
 from event import SignalEvent
 
-# =====计算均线策略
+# =====海龟交易策略
+
 # 均线策略：
 # 当短期均线由下向上穿过长期均线的时候，第二天以开盘价全仓买入并在之后一直持有股票。
 # 当短期均线由上向下穿过长期均线的时候，第二天以开盘价卖出全部股票并在之后一直空仓，直到下一次买入。
 
-class MovingAverageCrossStrategy(Strategy):
+
+class TurtleStrategy(Strategy):
     """
     Carries out a basic Moving Average Crossover strategy with a
     short/long simple weighted moving average. Default short/long
@@ -83,13 +85,13 @@ class MovingAverageCrossStrategy(Strategy):
                 if short_sma > long_sma and self.bought[s] == "OUT":
                     print("LONG: %s" % bar_date)
                     sig_dir = 'LONG'
-                    signal = SignalEvent(1, symbol, bars[-1], dt, sig_dir, 1.0)
+                    signal = SignalEvent(1, symbol, dt, sig_dir, 1.0)
                     self.events.put(signal)
                     self.bought[s] = 'LONG'
                 elif short_sma < long_sma and self.bought[s] == "LONG":
                     print("SHORT: %s" % bar_date)
                     sig_dir = 'EXIT'
-                    signal = SignalEvent(1, symbol, bars[-1], dt, sig_dir, 1.0)
+                    signal = SignalEvent(1, symbol, dt, sig_dir, 1.0)
                     self.events.put(signal)
                     self.bought[s] = 'OUT'
 
