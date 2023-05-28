@@ -54,6 +54,8 @@ class Backtest(object):
         self.orders = 0
         self.fills = 0
         self.num_strats = 1
+        self.commission_mode = "PERCENT"
+        self.commission_value = 0.0003
         self._generate_trading_instances()
 
     def _generate_trading_instances(self):
@@ -66,10 +68,10 @@ class Backtest(object):
         self.data_handler = self.data_handler_cls(self.events, self.start_date, self.end_date, self.csv_dir,
                                                   self.symbol_list, self.time_frame)
         self.strategy = self.strategy_cls(self.data_handler, self.events)
+        self.execution_handler = self.execution_handler_cls(self.events, self.commission_mode, self.commission_value)
         self.portfolio = self.portfolio_cls(self.data_handler, self.events,
-                                            self.start_date,
+                                            self.start_date, self.execution_handler,
                                             self.initial_capital)
-        self.execution_handler = self.execution_handler_cls(self.events)
 
     def _run_backtest(self):
         """

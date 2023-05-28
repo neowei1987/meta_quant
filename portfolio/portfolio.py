@@ -27,7 +27,7 @@ class Portfolio(object):
     time-index, as well as the percentage change in
     portfolio total across bars.
     """
-    def __init__(self, bars, events, start_date, initial_capital=100000.0):
+    def __init__(self, bars, events, start_date, execution_handler, initial_capital=100000.0):
         """
         Initialises the portfolio with bars and an event queue.
         Also includes a starting datetime index and initial capital
@@ -52,6 +52,7 @@ class Portfolio(object):
         self.all_holdings = self.construct_all_holdings()
         # 当前资产信息
         self.current_holdings = self.construct_current_holdings()
+        self.execution_handler = execution_handler
 
     def construct_all_positions(self):
             """
@@ -146,7 +147,9 @@ class Portfolio(object):
         if fill.direction == 'SELL':
             fill_dir = -1
         # Update holdings list with new quantities
+        # 最新价格
         fill_cost = self.bars.get_latest_bar_value(fill.symbol, "Close")
+        # 数量
         cost = fill_dir * fill_cost * fill.quantity
         self.current_holdings[fill.symbol] += cost
         self.current_holdings['commission'] += fill.commission
@@ -168,8 +171,11 @@ class Portfolio(object):
         要考虑手续费，手续费有两种：
         1. 一种是固定的
         2. 一种 成交额 * 手续费比率
+        还需要考虑品种，不同的symbol，最小头寸不一样
         """
-        return round(self.current_holdings['cash'] / price, 5)
+        max_quantity_from_risk_ctrl = 10000
+        max_quantity_from_execution = self.execution_handler.get_max_quantity(self.current_holdings['cash'], price)
+        return min(max_quantity_from_risk_ctrl, max_quantity_from_execution)
 
     def generate_naive_order(self, signal):
         """
@@ -187,13 +193,13 @@ class Portfolio(object):
         cur_quantity = self.current_positions[symbol]
         order_type = 'MKT'
         if direction == 'LONG' and cur_quantity == 0:
-            order = OrderEvent(symbol, order_type, mkt_quantity, 'BUY')
+            order = OrderEvent(symbol, order_type, mkt_quantity, 'BUY', signal.price)
         if direction == 'SHORT' and cur_quantity == 0:
-            order = OrderEvent(symbol, order_type, mkt_quantity, 'SELL')
+            order = OrderEvent(symbol, order_type, mkt_quantity, 'SELL', signal.price)
         if direction == 'EXIT' and cur_quantity > 0:
-            order = OrderEvent(symbol, order_type, abs(cur_quantity), 'SELL')
+            order = OrderEvent(symbol, order_type, abs(cur_quantity), 'SELL', signal.price)
         if direction == 'EXIT' and cur_quantity < 0:
-            order = OrderEvent(symbol, order_type, abs(cur_quantity), 'BUY')
+            order = OrderEvent(symbol, order_type, abs(cur_quantity), 'BUY', signal.price)
         return order
 
     def update_signal(self, event):
