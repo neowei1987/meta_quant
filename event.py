@@ -62,7 +62,7 @@ class OrderEvent(Event):
       quantity and a direction.
       """
 
-    def __init__(self, symbol, order_type, quantity, direction):
+    def __init__(self, symbol, order_type, quantity, direction, price):
         """
         Initialises the order type, setting whether it is
         a Market order (’MKT’) or Limit order (’LMT’), has
@@ -79,6 +79,7 @@ class OrderEvent(Event):
         self.order_type = order_type
         self.quantity = quantity
         self.direction = direction
+        self.price = price
 
     def print_order(self):
         print(
@@ -119,16 +120,6 @@ class FillEvent(Event):
         self.quantity = quantity
         self.direction = direction
         self.fill_cost = fill_cost
-        # Calculate commission
-        if commission is None:
-            self.commission = self.calculate_ib_commission()
-        else:
-            self.commission = commission
+        self.commission = commission
 
-    def calculate_ib_commission(self):
-        full_cost = 1.3
-        if self.quantity <= 500:
-            full_cost = max(1.3, 0.013 * self.quantity)
-        else:  # Greater than 500
-            full_cost = max(1.3, 0.008 * self.quantity)
-        return full_cost
+

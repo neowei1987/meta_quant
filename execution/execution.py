@@ -7,6 +7,9 @@ from __future__ import print_function
 
 from abc import ABCMeta, abstractmethod
 import datetime
+
+from execution.commission import CommissionHelper
+
 try:
     import Queue as queue
 except ImportError:
@@ -41,6 +44,9 @@ class ExecutionHandler(object):
         """
         raise NotImplementedError("Should implement execute_order()")
 
+    def get_max_quantity(self, cash, price):
+        raise NotImplementedError("Should implement execute_order()")
+
 
 class SimulatedExecutionHandler(ExecutionHandler):
     """
@@ -53,7 +59,7 @@ class SimulatedExecutionHandler(ExecutionHandler):
     handler.
     """
     
-    def __init__(self, events):
+    def __init__(self, events, commission_mode, commission_value):
         """
         Initialises the handler, setting the event queues
         up internally.
@@ -62,6 +68,7 @@ class SimulatedExecutionHandler(ExecutionHandler):
         events - The Queue of Event objects.
         """
         self.events = events
+        self.commission_helper = CommissionHelper(commission_mode, commission_value)
 
     def execute_order(self, event):
         """
@@ -72,8 +79,13 @@ class SimulatedExecutionHandler(ExecutionHandler):
         event - Contains an Event object with order information.
         """
         if event.type == 'ORDER':
+            # 获取成交价格
             fill_event = FillEvent(
                 datetime.datetime.utcnow(), event.symbol,
-                'ARCA', event.quantity, event.direction, None
+                'ARCA', event.quantity, event.direction, event.price,
+                self.commission_helper.get_commission(event.quantity * event.price)
             )
             self.events.put(fill_event)
+
+    def get_max_quantity(self, cash, price):
+        return self.commission_helper.get_max_quantity(cash, price)
