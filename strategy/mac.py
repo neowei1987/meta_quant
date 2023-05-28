@@ -4,6 +4,7 @@
 # mac.py
 
 from __future__ import print_function
+from __future__ import absolute_import
 
 import datetime
 
@@ -11,10 +12,6 @@ import numpy as np
 
 from strategy import Strategy
 from event import SignalEvent
-from backtest.backtest import Backtest
-from data.data import HistoricCSVDataHandler
-from execution.execution import SimulatedExecutionHandler
-from portfolio import Portfolio
 
 
 class MovingAverageCrossStrategy(Strategy):
@@ -67,7 +64,7 @@ class MovingAverageCrossStrategy(Strategy):
         if event.type == 'MARKET':
             for s in self.symbol_list:
                 bars = self.bars.get_latest_bars_values(
-                    s, "adj_close", N=self.long_window
+                    s, "Close", N=self.long_window
                 )
                 bar_date = self.bars.get_latest_bar_datetime(s)
                 if bars is not None and bars != []:
@@ -91,17 +88,3 @@ class MovingAverageCrossStrategy(Strategy):
                         self.events.put(signal)
                         self.bought[s] = 'OUT'
 
-
-if __name__ == "__main__":
-    csv_dir = '/path/to/your/csv/file'  # CHANGE THIS!
-    symbol_list = ['AAPL']
-    initial_capital = 100000.0
-    heartbeat = 0.0
-    start_date = datetime.datetime(1990, 1, 1, 0, 0, 0)
-
-    backtest = Backtest(
-        csv_dir, symbol_list, initial_capital, heartbeat, 
-        start_date, HistoricCSVDataHandler, SimulatedExecutionHandler, 
-        Portfolio, MovingAverageCrossStrategy
-    )
-    backtest.simulate_trading()

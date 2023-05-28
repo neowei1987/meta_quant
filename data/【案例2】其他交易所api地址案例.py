@@ -3,16 +3,12 @@ import json
 import pandas as pd
 pd.set_option('expand_frame_repr', False)  # 当列太多时不换行
 
-
-
 # ===okex交易所
 url = 'https://www.okex.com/api/v1/ticker.do?symbol=ltc_usdt'  # tick数据
 # url = 'https://www.okex.com/api/v1/kline.do?symbol=btc_usdt&type=30min'  # k线数据
 # 择时策略，趋势策略
 
 # depth、tick, 用于做高频策略
-
-
 
 # ===binance交易所
 # url = 'https://api.binance.com/api/v1/ticker/24hr'  # tick数据

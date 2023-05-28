@@ -10,6 +10,8 @@ try:
 except ImportError:
     import queue
 import time
+
+
 class Backtest(object):
     """
     Enscapsulates the settings and components for carrying out
@@ -17,7 +19,7 @@ class Backtest(object):
     """
     def __init__(
         self, csv_dir, symbol_list, initial_capital,
-        heartbeat, start_date, data_handler,
+        heartbeat, start_date, end_date, time_frame, data_handler,
         execution_handler, portfolio, strategy
     ):
         """
@@ -28,6 +30,8 @@ class Backtest(object):
         intial_capital - The starting capital for the portfolio.
         heartbeat - Backtest "heartbeat" in seconds
         start_date - The start datetime of the strategy.
+        end_date - The end datetime of the strategy.
+        time_frame - The time frame of the strategy.
         data_handler - (Class) Handles the market data feed.
         execution_handler - (Class) Handles the orders/fills for trades.
         portfolio - (Class) Keeps track of portfolio current
@@ -39,6 +43,8 @@ class Backtest(object):
         self.initial_capital = initial_capital
         self.heartbeat = heartbeat
         self.start_date = start_date
+        self.end_date = end_date
+        self.time_frame = time_frame
         self.data_handler_cls = data_handler
         self.execution_handler_cls = execution_handler
         self.portfolio_cls = portfolio
@@ -49,6 +55,7 @@ class Backtest(object):
         self.fills = 0
         self.num_strats = 1
         self._generate_trading_instances()
+
     def _generate_trading_instances(self):
         """
         Generates the trading instance objects from
@@ -56,13 +63,14 @@ class Backtest(object):
         """
         print(
             "Creating DataHandler, Strategy, Portfolio and ExecutionHandler")
-        self.data_handler = self.data_handler_cls(self.events, self.csv_dir,
-                                                  self.symbol_list)
+        self.data_handler = self.data_handler_cls(self.events, self.start_date, self.end_date, self.csv_dir,
+                                                  self.symbol_list, self.time_frame)
         self.strategy = self.strategy_cls(self.data_handler, self.events)
         self.portfolio = self.portfolio_cls(self.data_handler, self.events,
                                             self.start_date,
                                             self.initial_capital)
         self.execution_handler = self.execution_handler_cls(self.events)
+
     def _run_backtest(self):
         """
         Executes the backtest.
@@ -72,7 +80,7 @@ class Backtest(object):
             i += 1
             #print i
             # Update the market bars
-            if self.data_handler.continue_backtest == True:
+            if self.data_handler.continue_backtest:
                 self.data_handler.update_bars()
             else:
                 break
@@ -97,6 +105,7 @@ class Backtest(object):
                             self.fills += 1
                             self.portfolio.update_fill(event)
             time.sleep(self.heartbeat)
+
     def _output_performance(self):
         """
         Outputs the strategy performance from the backtest.
@@ -110,6 +119,7 @@ class Backtest(object):
         print("Signals: %s" % self.signals)
         print("Orders: %s" % self.orders)
         print("Fills: %s" % self.fills)
+
     def simulate_trading(self):
         """
         Simulates the backtest and outputs portfolio performance.

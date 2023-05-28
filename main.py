@@ -21,20 +21,25 @@
 # 公告事件
 
 # 数据
+import datetime
 
+from backtest.backtest import Backtest
+from data.smart_data import SmartDataHandler
+from execution.execution import SimulatedExecutionHandler
+from portfolio.portfolio import Portfolio
+from strategy.mac import MovingAverageCrossStrategy
 
 if __name__ == "__main__":
+
     csv_dir = '/path/to/your/csv/file'  # CHANGE THIS!
-    symbol_list = ['SPY']
+    symbol_list = ['BTCUSDT']
     initial_capital = 100000.0
     heartbeat = 0.0
-    start_date = datetime.datetime(2006,1,3)
-
+    start_date = datetime.datetime(2023, 1, 1, 0, 0, 0)
+    end_date = datetime.datetime(2023, 1, 10, 0, 0, 0)
     backtest = Backtest(
         csv_dir, symbol_list, initial_capital, heartbeat,
-        start_date, HistoricCSVDataHandler, SimulatedExecutionHandler,
-        Portfolio, SPYDailyForecastStrategy
+        start_date, end_date, "1m", SmartDataHandler, SimulatedExecutionHandler,
+        Portfolio, MovingAverageCrossStrategy
     )
     backtest.simulate_trading()
-
-# See PyCharm help at https://www.jetbrains.com/help/pycharm/

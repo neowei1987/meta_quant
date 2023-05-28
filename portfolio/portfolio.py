@@ -12,7 +12,9 @@ except ImportError:
 import numpy as np
 import pandas as pd
 from event import FillEvent, OrderEvent
-from performance import create_sharpe_ratio, create_drawdowns
+from performance.performance import create_sharpe_ratio, create_drawdowns
+
+
 class Portfolio(object):
     """
     The Portfolio class handles the positions and market
@@ -102,7 +104,7 @@ class Portfolio(object):
         for s in self.symbol_list:
             # Approximation to the real value
             market_value = self.current_positions[s] * \
-            self.bars.get_latest_bar_value(s, "adj_close")
+            self.bars.get_latest_bar_value(s, "Close")
             dh[s] = market_value
             dh['total'] += market_value
         # Append the current holdings
