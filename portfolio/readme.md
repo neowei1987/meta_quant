@@ -1,3 +1,7 @@
+## 破产管理
+
+## 资金管理
+
 每次凭掷硬币随机进入市场，或者做多头，或者做空头
 旦得到一个退出市场的信号，就基于随机信号再次入市
 用EMA（ATR，1O）指标来确定市场的波动性
@@ -22,6 +26,12 @@
 模型3：百分比风险模型
 
 模型4：百分比波动幅度模型
+
+真实波动均值 average true range ATR
+
+市场的每日上下波动为基础。
+
+把资金分为100份，用每一份去开仓。
 
 ![image](https://cdn.staticaly.com/gh/neowei1987/blog_assets@main/image.28fqsv0h7nr4.webp)
 
