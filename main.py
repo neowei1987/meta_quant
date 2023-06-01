@@ -35,7 +35,7 @@ if __name__ == "__main__":
     symbol_list = ['BTCUSDT']
     initial_capital = 100000.0
     heartbeat = 0.0
-    start_date = datetime.datetime(2023, 1, 1, 0, 0, 0)
+    start_date = datetime.datetime(2017, 8, 14, 0, 0, 0)
     end_date = datetime.datetime(2023, 1, 10, 0, 0, 0)
     backtest = Backtest(
         csv_dir, symbol_list, initial_capital, heartbeat,

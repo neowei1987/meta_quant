@@ -82,10 +82,11 @@ class SimulatedExecutionHandler(ExecutionHandler):
             # 获取成交价格
             fill_event = FillEvent(
                 datetime.datetime.utcnow(), event.symbol,
-                'ARCA', event.quantity, event.direction, event.price,
+                'ARCA', event.quantity, event.direction, event.price * event.quantity,
                 self.commission_helper.get_commission(event.quantity * event.price)
             )
             self.events.put(fill_event)
 
+    # 考虑手续费的话，当前现金还可以开多少仓位
     def get_max_quantity(self, cash, price):
         return self.commission_helper.get_max_quantity(cash, price)

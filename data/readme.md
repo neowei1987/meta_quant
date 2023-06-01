@@ -1,6 +1,10 @@
 #行情数据
 
 
+外汇数据下载：
+https://traderstrust-cn.com/historical-data/
+
+
 查找
 
 1.交易所的官方数据通道

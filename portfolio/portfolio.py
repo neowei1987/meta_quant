@@ -147,12 +147,11 @@ class Portfolio(object):
         if fill.direction == 'SELL':
             fill_dir = -1
         # Update holdings list with new quantities
-        # 最新价格
-        fill_cost = self.bars.get_latest_bar_value(fill.symbol, "Close")
         # 数量
-        cost = fill_dir * fill_cost * fill.quantity
-        self.current_holdings[fill.symbol] += cost
+        cost = fill_dir * fill.fill_cost
         self.current_holdings['commission'] += fill.commission
+        if self.current_holdings['cash'] < (cost + fill.commission):
+            print(self.current_holdings)
         self.current_holdings['cash'] -= (cost + fill.commission)
         self.current_holdings['total'] -= (cost + fill.commission)
 
@@ -189,6 +188,7 @@ class Portfolio(object):
         symbol = signal.symbol
         direction = signal.signal_type
         strength = signal.strength
+        # 结合手续费、成本控制等，得到本次的开仓数量
         mkt_quantity = self.get_quantity_to_order(signal.price)
         cur_quantity = self.current_positions[symbol]
         order_type = 'MKT'

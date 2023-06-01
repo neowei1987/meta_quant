@@ -1,3 +1,6 @@
+from util.number import float_floor
+
+
 class CommissionHelper(object):
     """
        Handles order execution via the Interactive Brokers
@@ -17,9 +20,9 @@ class CommissionHelper(object):
 
     def get_max_quantity(self, cash, price):
         if self.commission_mode == "FIXED":
-            return round((cash - self.commission_value) / price, 5)
+            return float_floor((cash - self.commission_value) / price, 5)
         else:
-            return round((cash / ((1 + self.commission_value) * price)), 5)
+            return float_floor((cash / ((1 + self.commission_value) * price)), 5)
 
     def calculate_ib_commission(self):
         full_cost = 1.3
