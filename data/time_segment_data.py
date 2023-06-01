@@ -1,4 +1,5 @@
 import os
+import time
 
 import pandas as pd
 
@@ -96,3 +97,14 @@ class TimeSegmentData:
 
         for b in self.df:
             yield b
+
+    def download_bars(self):
+        """
+        Returns the latest bar from the data feed.
+        """
+        if self.df is None:
+            if not os.path.exists(self.file_path):
+                self.df = self._fetch_from_remote_server()
+                self._write_to_local_file()
+                time.sleep(20)
+

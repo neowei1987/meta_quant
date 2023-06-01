@@ -135,7 +135,7 @@ class IBExecutionHandler(ExecutionHandler):
         direction = fd["direction"]
         fill_cost = msg.avgFillPrice
         # Create a fill event object
-        fill = FillEvent(
+        fill_event = FillEvent(
             datetime.datetime.utcnow(), symbol,
             exchange, filled, direction, fill_cost)
         # Make sure that multiple messages don’t create
